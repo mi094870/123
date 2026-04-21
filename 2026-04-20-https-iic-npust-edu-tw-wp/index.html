@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SafeRoute NT | 通學安全網頁儀表板</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <section class="hero-copy">
+        <p class="eyebrow">SafeRoute NT</p>
+        <h1>通學安全網頁儀表板</h1>
+        <p class="hero-text">
+          這是一個可直接在瀏覽器開啟的前端版本，整合通學路線、風險事件、監視設備與即時模擬資訊。
+          目前資料為展示用範例，之後可以很容易改成真實資料、串接 API，或調整成你想要的版面與功能。
+        </p>
+      </section>
+
+      <section class="hero-panel">
+        <div class="status-row">
+          <div class="status-chip live">
+            <span class="dot"></span>
+            <span id="liveModeLabel">每 3 秒更新</span>
+          </div>
+          <div class="status-chip subtle" id="runningStateLabel">自動更新啟用中</div>
+        </div>
+
+        <p class="hero-meta">
+          你可以先用這個版本做展示、提案或測試互動流程。之後要改標題、顏色、欄位、資料來源、路線邏輯，
+          直接編輯 HTML、CSS、JavaScript 就可以，不會被鎖死。
+        </p>
+
+        <div class="refresh-box">
+          <label for="refreshRange">更新頻率</label>
+          <input id="refreshRange" type="range" min="1" max="15" value="3">
+          <div class="refresh-values">
+            <span>1 秒</span>
+            <strong id="refreshValue">3 秒</strong>
+            <span>15 秒</span>
+          </div>
+        </div>
+
+        <div class="quick-actions" id="quickActions">
+          <button class="quick-button" data-refresh="1000">1 秒</button>
+          <button class="quick-button active" data-refresh="3000">3 秒</button>
+          <button class="quick-button" data-refresh="5000">5 秒</button>
+          <button class="quick-button" data-refresh="15000">15 秒</button>
+        </div>
+      </section>
+    </header>
+
+    <main class="dashboard">
+      <aside class="panel controls-panel">
+        <div class="panel-title-row">
+          <h2>控制面板</h2>
+          <span class="panel-badge">Live</span>
+        </div>
+
+        <div class="stage-filter" id="stageFilter">
+          <button class="stage-button active" data-stage="all">全部學制</button>
+          <button class="stage-button" data-stage="senior">高中職</button>
+          <button class="stage-button" data-stage="junior">國中</button>
+          <button class="stage-button" data-stage="elementary">國小</button>
+        </div>
+
+        <label class="field">
+          <span>學校選擇</span>
+          <select id="schoolSelect"></select>
+        </label>
+
+        <label class="field">
+          <span>通學方式</span>
+          <select id="commuteMode">
+            <option value="walk">步行</option>
+            <option value="bike">自行車</option>
+            <option value="scooter">機車接送</option>
+            <option value="bus">公車</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>顯示模式</span>
+          <select id="displayMode">
+            <option value="safe">安全優先</option>
+            <option value="fast">速度優先</option>
+          </select>
+        </label>
+
+        <div class="control-actions">
+          <button id="toggleRunButton" class="action-button primary">暫停更新</button>
+          <button id="manualRefreshButton" class="action-button">立即刷新</button>
+        </div>
+
+        <div class="countdown-block">
+          <p>距離下次更新</p>
+          <strong id="countdownValue">3.0 秒</strong>
+        </div>
+
+        <div class="school-profile">
+          <p class="section-label">學校概況</p>
+          <strong id="schoolStageLabel">高中職</strong>
+          <span id="schoolTownLabel">屏東市</span>
+          <p id="schoolFocusText">目前示範資料以通學主要路口、轉彎視線與接送動線為分析重點。</p>
+        </div>
+
+        <div class="data-policy">
+          <p class="section-label">資料狀態</p>
+          <div class="policy-item">
+            <strong>基礎資料</strong>
+            <span id="baseDataLabel">示範學校、路線與設備資料</span>
+          </div>
+          <div class="policy-item">
+            <strong>事件來源</strong>
+            <span id="liveDataLabel">模擬即時事件資料</span>
+          </div>
+          <div class="policy-item">
+            <strong>最後同步</strong>
+            <span id="dataSyncLabel">尚未更新</span>
+          </div>
+        </div>
+
+        <div class="edit-note">
+          <p class="section-label">可修改項目</p>
+          <p>
+            版面結構在 <code>index.html</code>，樣式在 <code>styles.css</code>，互動與資料在 <code>app.js</code>。
+            你之後可以直接自己改。
+          </p>
+        </div>
+      </aside>
+
+      <section class="panel county-map-panel">
+        <div class="panel-title-row">
+          <h2>縣域總覽地圖</h2>
+          <span id="lastUpdated">尚未更新</span>
+        </div>
+
+        <div class="map-toolbar">
+          <div class="map-chip">學校數 <strong id="mapSchoolCount">0</strong></div>
+          <div class="map-chip">事件點 <strong id="mapRiskCount">0</strong></div>
+          <div class="map-chip">監視設備 <strong id="mapCameraCount">0</strong></div>
+          <div class="map-chip">目前學制 <strong id="overviewStage">全部學制</strong></div>
+        </div>
+
+        <div class="map-frame county">
+          <svg id="countyMapSvg" viewBox="0 0 980 700" role="img" aria-label="縣域通學安全總覽">
+            <defs>
+              <linearGradient id="countyGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f4ebdc"></stop>
+                <stop offset="100%" stop-color="#dfeaf2"></stop>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="980" height="700" fill="url(#countyGlow)"></rect>
+            <path class="county-shape" d="M292 71 C390 32, 490 38, 560 84 C633 132, 678 217, 703 309 C726 392, 708 485, 653 564 C587 657, 485 670, 387 633 C300 600, 224 528, 200 439 C176 353, 188 278, 214 216 C236 164, 248 112, 292 71 Z"></path>
+            <path class="county-road county-main" d="M275 180 C372 210, 474 249, 652 317"></path>
+            <path class="county-road county-main" d="M309 510 C395 456, 477 404, 629 277"></path>
+            <path class="county-road county-sub" d="M402 120 C436 221, 464 348, 447 593"></path>
+            <path class="county-road county-sub" d="M576 158 C555 238, 520 325, 468 428"></path>
+            <g id="countyIncidentLayer"></g>
+            <g id="countyCameraLayer"></g>
+            <g id="countySchoolLayer"></g>
+          </svg>
+        </div>
+      </section>
+
+      <section class="panel metrics-panel">
+        <div class="panel-title-row">
+          <h2>即時分析</h2>
+          <span class="panel-badge accent">Predict</span>
+        </div>
+
+        <div class="overview-strip">
+          <div class="overview-item">
+            <span>目前學校數</span>
+            <strong id="overviewSchoolCount">0</strong>
+          </div>
+          <div class="overview-item">
+            <span>路線策略</span>
+            <strong id="overviewMode">安全優先</strong>
+          </div>
+          <div class="overview-item">
+            <span>更新頻率</span>
+            <strong id="overviewFrequency">3 秒</strong>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card">
+            <p>風險分數</p>
+            <strong id="riskScore">72</strong>
+            <span id="riskLevelText">中高風險</span>
+          </article>
+          <article class="metric-card">
+            <p>預估通學時間</p>
+            <strong id="commuteTime">14 分鐘</strong>
+            <span id="routeModeText">安全優先</span>
+          </article>
+          <article class="metric-card">
+            <p>近期事件數</p>
+            <strong id="recentEvents">3</strong>
+            <span id="weatherText">晴天 / 路面乾燥</span>
+          </article>
+          <article class="metric-card">
+            <p>關注熱點</p>
+            <strong id="hotspots">2</strong>
+            <span id="cameraText">2 組校園周邊設備</span>
+          </article>
+        </div>
+
+        <div class="prediction-grid">
+          <article class="mini-card prediction">
+            <p>15 分鐘後趨勢</p>
+            <strong id="futureTrafficText">車流穩定</strong>
+          </article>
+          <article class="mini-card prediction">
+            <p>主要影響因子</p>
+            <strong id="factorText">晴天 + 步行動線</strong>
+          </article>
+          <article class="mini-card prediction">
+            <p>建議動作</p>
+            <strong id="actionText">維持目前路線</strong>
+          </article>
+        </div>
+
+        <div class="alert-card">
+          <p class="section-label">AI 建議</p>
+          <p id="alertMessage">這裡會依照學校、天氣與通學模式自動生成提醒文字。</p>
+        </div>
+
+        <div class="route-card">
+          <div>
+            <p class="section-label">建議路線</p>
+            <strong id="recommendedRoute">文化路主線 -> 校門口安全進入</strong>
+          </div>
+          <div class="route-tags">
+            <span id="safetyTag">安全係數 84%</span>
+            <span id="timeTag">多花 2 分鐘</span>
+          </div>
+        </div>
+
+        <div class="improvement-grid">
+          <article class="mini-card">
+            <p>主要風險來源</p>
+            <strong id="riskSourceText">校門口車流交織</strong>
+          </article>
+          <article class="mini-card">
+            <p>改善方向</p>
+            <strong id="improvementText">增加導引與分流</strong>
+          </article>
+          <article class="mini-card">
+            <p>協作對象</p>
+            <strong id="audienceText">家長 / 學校 / 交通單位</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel recent-panel">
+        <div class="panel-title-row">
+          <h2>近期事件</h2>
+          <span class="panel-badge">Recent</span>
+        </div>
+        <ul id="recentList" class="feed-list"></ul>
+      </section>
+
+      <section class="panel detail-map-panel">
+        <div class="panel-title-row">
+          <h2>學校周邊細部地圖</h2>
+          <span class="panel-badge">Focus</span>
+        </div>
+        <div class="map-frame detail">
+          <svg id="detailMapSvg" viewBox="0 0 900 620" role="img" aria-label="學校周邊通學安全細部地圖">
+            <defs>
+              <linearGradient id="detailGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f6f2e8"></stop>
+                <stop offset="100%" stop-color="#e3ecf3"></stop>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="900" height="620" fill="url(#detailGlow)"></rect>
+            <path class="road road-major" d="M40 130 C250 140, 450 120, 860 140"></path>
+            <path class="road road-major" d="M100 520 C280 450, 520 470, 810 390"></path>
+            <path class="road road-sub" d="M200 60 C260 170, 320 300, 360 570"></path>
+            <path class="road road-sub" d="M620 60 C580 180, 560 290, 530 540"></path>
+            <path class="road road-sub" d="M60 300 C240 260, 360 240, 820 300"></path>
+            <g id="routeLayer"></g>
+            <g id="incidentLayer"></g>
+            <g id="cameraLayer"></g>
+            <g id="schoolLayer">
+              <circle id="schoolPulse" cx="450" cy="300" r="44"></circle>
+              <circle id="schoolMarker" cx="450" cy="300" r="16"></circle>
+              <text id="schoolLabel" x="450" y="350" text-anchor="middle">學校</text>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <section class="panel stage-summary-panel">
+        <div class="panel-title-row">
+          <h2>學制摘要</h2>
+          <span class="panel-badge">Summary</span>
+        </div>
+        <div class="integration-grid">
+          <article class="integration-card">
+            <p>平均風險分數</p>
+            <strong id="stageAverageRisk">0</strong>
+          </article>
+          <article class="integration-card">
+            <p>學校總數</p>
+            <strong id="stageSchoolCount">0</strong>
+          </article>
+          <article class="integration-card">
+            <p>目前工作重點</p>
+            <strong id="stageFocusAction">依學制切換後顯示摘要</strong>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
