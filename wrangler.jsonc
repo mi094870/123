@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "123",
+  "compatibility_date": "2026-05-11",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "2026-04-20-https-iic-npust-edu-tw-wp"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
